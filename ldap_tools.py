@@ -1,5 +1,5 @@
 import ldap
-from core import log
+from opus.lib import log
 log = log.getLogger()
 
 def get_ldap_roles(server, username, password):

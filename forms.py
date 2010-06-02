@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from idpauth.models import IdentityProvider
 
-from core import log
+from opus.lib import log
 log = log.getLogger()
 
 class IdpAdminForm(forms.ModelForm):

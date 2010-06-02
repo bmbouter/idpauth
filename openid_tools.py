@@ -15,7 +15,7 @@ from openid.consumer.discover import DiscoveryFailure
 
 from idpauth.models import Association, Nonce
 
-from core import log
+from opus.lib import log
 log = log.getLogger()
 
 def begin_openid(session, trust_root, openid_url, resource_redirect_url):

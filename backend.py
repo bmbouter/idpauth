@@ -2,7 +2,7 @@ from django.contrib.auth.models import User, Permission, Group
 
 from idpauth.models import IdentityProvider
 
-from core import log
+from opus.lib import log
 log = log.getLogger()
 
 

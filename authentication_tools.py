@@ -2,7 +2,7 @@ from django.utils.html import escape
 from django.http import get_host
 from django.conf import settings
 
-from core import log
+from opus.lib import log
 log = log.getLogger()
 
 def get_institution(request):

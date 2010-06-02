@@ -12,7 +12,7 @@ from idpauth import openid_tools
 from idpauth import authentication_tools
 from idpauth import ldap_tools
 
-from core import log
+from opus.lib import log
 log = log.getLogger()
 
 
