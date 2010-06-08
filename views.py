@@ -179,6 +179,11 @@ def logout_view(request):
     logout(request)
     institution = authentication_tools.get_institution(request)
     
+    if "next" in request.GET:
+        next = request.GET['next']
+    else:
+        next = None
+
     return render_to_response('idpauth/logout.html',
-    {},
-    context_instance=RequestContext(request))
+            {'next' : next, },
+            context_instance=RequestContext(request))
