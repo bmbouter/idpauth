@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User, Permission, Group
+from django.core.exceptions import ObjectDoesNotExist
 
 from idpauth.models import IdentityProvider
 
@@ -25,15 +26,32 @@ class IdpAuthBackend:
                 except User.DoesNotExist:
                     log.debug("User not found in database")
                     return None
-    
-    def get_group_permissions(self, user_obj):
-        institution = user_obj.username.split('++')
-        if len(institution) == 1:
-            idp = 'local'
-        else:
-            idp = IdentityProvider.objects.filter(institution=institution[0])
 
-        if idp[0].type == 'ldap':
+
+    def get_group_permissions(self, user_obj):
+        idp = self.get_identity_provider(user_obj)
+        if idp:
+            user_obj._perm_cache.update(self.get_idp_group_permissions(user_obj, idp))
+        
+        if not hasattr(user_obj, '_group_perm_cache'):
+            perms = Permission.objects.filter(group__user=user_obj
+                    ).values_list('content_type__app_label', 'codename'
+                    ).order_by()
+            user_obj._group_perm_cache = set(["%s.%s" % (ct, name) for ct, name in perms])
+        return user_obj._group_perm_cache
+
+    
+    def get_identity_provider(self, user_obj):
+        institution = user_obj.username.split('++')[0]
+        try:
+            idp = IdentityProvider.objects.get(institution=institution)
+            return idp
+        except ObjectDoesNotExist:
+            return None
+
+
+    def get_idp_group_permissions(self, user_obj, idp):
+        if idp.type == 'ldap':
             perms = []
             user_profile = user_obj.get_profile()
             roles = user_profile.ldap_roles
