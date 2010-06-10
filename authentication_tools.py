@@ -41,6 +41,10 @@ def get_provider(url):
     return provider
 
 def add_session_username(request, username):
-    clean_username = username.split('++')[1]
+    clean_username = username.split('++')
+    if len(clean_username) == 1:
+        clean_username = clean_username
+    else:
+        clean_username = clean_username[1]
     log.debug("Clean username for session is " + str(clean_username))
     request.session['username'] = clean_username
