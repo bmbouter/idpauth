@@ -150,7 +150,7 @@ def local_login(request):
             login(request, user)
             log.debug("Setting session username")
             authentication_tools.add_session_username(request, username)
-            log.debug("Username in session after setting is " + request.session['username'])
+            log.debug("Username in session after setting is " + str(request.session['username']))
             log.debug("Redirecting to " + redirect_url)
             return HttpResponseRedirect(redirect_url)
         else:
