@@ -16,21 +16,27 @@ from opus.lib import log
 log = log.getLogger()
 
 
-def determine_login(request, message=None):
-    institution = authentication_tools.get_institution(request)
-    institutional_idp = IdentityProvider.objects.filter(institution__iexact=str(institution))
-
-    if "next" in request.GET:
-        next = request.GET['next']
+def determine_login(request, message=None, template_name=None, redirect_url=None):
+    if not redirect_url:
+        if "next" in request.GET:
+            next = request.GET['next']
+        else:
+            next = settings.RESOURCE_REDIRECT_URL
     else:
-        next = settings.RESOURCE_REDIRECT_URL
+        next = redirect_url
 
-    if not institutional_idp:
-        log.debug("No institution")
-        return HttpResponse("There is no Identity Provider specified for your institution")
-    else:
-        authentication_type = institutional_idp[0].type
-        return render_to_response('idpauth/' + str(authentication_type) + '.html',
+    if not template_name:
+        institution = authentication_tools.get_institution(request)
+        institutional_idp = IdentityProvider.objects.filter(institution__iexact=str(institution))
+
+        if not institutional_idp:
+            log.debug("No institution")
+            return HttpResponse("There is no Identity Provider specified for your institution")
+        else:
+            authentication_type = institutional_idp[0].type
+            template_name = '/idpauth/' + str(authentication_type) + '.html'
+        
+    return render_to_response(template_name,
         {'next': next,
         'message' : message, },
         context_instance=RequestContext(request))
