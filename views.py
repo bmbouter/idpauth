@@ -34,7 +34,7 @@ def determine_login(request, message=None, template_name=None, redirect_url=None
             return HttpResponse("There is no Identity Provider specified for your institution")
         else:
             authentication_type = institutional_idp[0].type
-            template_name = '/idpauth/' + str(authentication_type) + '.html'
+            template_name = 'idpauth/' + str(authentication_type) + '.html'
         
     return render_to_response(template_name,
         {'next': next,
@@ -177,19 +177,25 @@ def shibboleth_login(request):
         return HttpResponse("Remote user not set.")
 
 @login_required
-def logout_view(request):
+def logout_view(request, template_name=None, redirect_url=None):
     try:
         del request.session['username']
     except KeyError:
         pass
     logout(request)
-    institution = authentication_tools.get_institution(request)
+    #institution = authentication_tools.get_institution(request)
     
-    if "next" in request.GET:
-        next = request.GET['next']
-    else:
-        next = None
+    if not template_name:
+        template_name = 'idpauth/logout.html'
 
-    return render_to_response('idpauth/logout.html',
+    if not redirect_url:
+        if "next" in request.GET:
+            next = request.GET['next']
+        else:
+            next = None
+    else:
+        next = redirect_url
+
+    return render_to_response(template_name,
             {'next' : next, },
             context_instance=RequestContext(request))
