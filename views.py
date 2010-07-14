@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
 
 from idpauth.models import IdentityProvider, IdentityProviderLDAP, UserProfile
 from idpauth import openid_tools
@@ -16,9 +17,11 @@ from opus.lib import log
 log = log.getLogger()
 
 
-def determine_login(request, message=None, template_name=None, redirect_url=None):
+def determine_login(request, message=None, template_name=None, redirect_url=None, redirect_viewname=None):
     if not redirect_url:
-        if "next" in request.GET:
+        if redirect_viewname != None:
+            next = reverse(redirect_viewname)
+        elif "next" in request.GET:
             next = request.GET['next']
         else:
             next = settings.RESOURCE_REDIRECT_URL
