@@ -180,7 +180,7 @@ def shibboleth_login(request):
         return HttpResponse("Remote user not set.")
 
 @login_required
-def logout_view(request, template_name=None, redirect_url=None):
+def logout_view(request, template_name=None, redirect_url=None, redirect_viewname=None):
     try:
         del request.session['username']
     except KeyError:
@@ -192,7 +192,9 @@ def logout_view(request, template_name=None, redirect_url=None):
         template_name = 'idpauth/logout.html'
 
     if not redirect_url:
-        if "next" in request.GET:
+        if redirect_viewname != None:
+            next = reverse(redirect_viewname)
+        elif "next" in request.GET:
             next = request.GET['next']
         else:
             next = None
