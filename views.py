@@ -18,11 +18,11 @@ log = log.getLogger()
 
 
 def determine_login(request, message=None, template_name=None, redirect_url=None, redirect_viewname=None):
-    if not redirect_url:
+    if "next" in request.GET:
+        next = request.GET['next']
+    elif not redirect_url:
         if redirect_viewname != None:
             next = reverse(redirect_viewname)
-        elif "next" in request.GET:
-            next = request.GET['next']
         else:
             next = settings.RESOURCE_REDIRECT_URL
     else:
@@ -87,6 +87,7 @@ def ldap_login(request):
         'message' : message},
         context_instance=RequestContext(request))
 
+
 def openid_login(request):
     openid_url = request.POST['openid_url']
     resource_redirect_url = request.POST['next']
@@ -100,6 +101,7 @@ def openid_login(request):
         return HttpResponse('The OpenID was invalid')
     else:
         return HttpResponseRedirect(redirect_url)
+
 
 def openid_login_complete(request):
     institution = authentication_tools.get_institution(request)
@@ -144,7 +146,8 @@ def openid_login_complete(request):
         {'message' : message,
         'next' : resource_redirect_url, },
         context_instance=RequestContext(request))
-    
+
+
 def local_login(request):
     username = request.POST['username']
     password = request.POST['password']
@@ -169,6 +172,7 @@ def local_login(request):
         log.debug("No user found")
         return HttpResponseRedirect(settings.LOGIN_URL)   
 
+
 def shibboleth_login(request):
     try:
         username = request.META['REMOTE_USER']
@@ -178,6 +182,7 @@ def shibboleth_login(request):
     except KeyError, e:
         log.debug(e)
         return HttpResponse("Remote user not set.")
+
 
 @login_required
 def logout_view(request, template_name=None, redirect_url=None, redirect_viewname=None):
@@ -191,11 +196,11 @@ def logout_view(request, template_name=None, redirect_url=None, redirect_viewnam
     if not template_name:
         template_name = 'idpauth/logout.html'
 
-    if not redirect_url:
+    if "next" in request.GET:
+            next = request.GET['next']
+    elif not redirect_url:
         if redirect_viewname != None:
             next = reverse(redirect_viewname)
-        elif "next" in request.GET:
-            next = request.GET['next']
         else:
             next = None
     else:
