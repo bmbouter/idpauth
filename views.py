@@ -12,6 +12,7 @@ from idpauth.models import IdentityProvider, IdentityProviderLDAP, UserProfile
 from idpauth import openid_tools
 from idpauth import authentication_tools
 from idpauth import ldap_tools
+from idpauth.forms import UserCreationForm
 
 from opus.lib import log
 log = log.getLogger()
@@ -183,6 +184,24 @@ def shibboleth_login(request):
         log.debug(e)
         return HttpResponse("Remote user not set.")
 
+
+def user_registration(request, template_name=None, redirect_url=None):
+    if 'next' in request.REQUEST:
+        redirect_url = request.REQUEST['next']
+    else:
+        redirect_url = settings.RESOURCE_REDIRECT_URL
+
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(redirect_url)
+    else:
+        form = UserCreationForm()
+    return render_to_response(template_name,
+            { 'form' : form,
+            'next' : redirect_url, },
+            context_instance=RequestContext(request))
 
 @login_required
 def logout_view(request, template_name=None, redirect_url=None, redirect_viewname=None):
