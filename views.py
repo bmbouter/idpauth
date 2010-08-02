@@ -12,7 +12,7 @@ from idpauth.models import IdentityProvider, IdentityProviderLDAP, UserProfile
 from idpauth import openid_tools
 from idpauth import authentication_tools
 from idpauth import ldap_tools
-from idpauth.forms import UserCreationForm
+from idpauth.forms import UserCreationForm, AuthenticationForm
 
 from opus.lib import log
 log = log.getLogger()
@@ -39,6 +39,10 @@ def determine_login(request, message=None, template_name=None, redirect_url=None
         else:
             authentication_type = institutional_idp[0].type
             template_name = 'idpauth/' + str(authentication_type) + '.html'
+            if authentication_type == 'local':
+                return HttpResponseRedirect(reverse("local_login_url",
+                    kwargs={ 'template_name' : template_name,
+                            'redirect_url' : next,  }))
         
     return render_to_response(template_name,
         {'next': next,
@@ -92,6 +96,7 @@ def ldap_login(request):
 def openid_login(request):
     openid_url = request.POST['openid_url']
     resource_redirect_url = request.POST['next']
+    log.debug(resource_redirect_url)
     institution = authentication_tools.get_institution(request)
     session = request.session
 
@@ -149,29 +154,41 @@ def openid_login_complete(request):
         context_instance=RequestContext(request))
 
 
-def local_login(request):
-    username = request.POST['username']
-    password = request.POST['password']
-    redirect_url = request.POST['next']
-    institution = authentication_tools.get_institution(request)
-    
-    user = authenticate(username=username, password=password)
-    
-    if user is not None:
-        if user.is_active:
-            log.debug("Logging user in")
-            login(request, user)
-            log.debug("Setting session username")
-            authentication_tools.add_session_username(request, username)
-            log.debug("Username in session after setting is " + str(request.session['username']))
-            log.debug("Redirecting to " + redirect_url)
-            return HttpResponseRedirect(redirect_url)
+def local_login(request, template_name=None, redirect_url=None, redirect_viewname=None):
+    message = None
+    if "next" in request.REQUEST:
+        next = request.REQUEST['next']
+    elif not redirect_url:
+        if redirect_viewname != None:
+            next = reverse(redirect_viewname)
         else:
-            log.debug("User is no longer active")
-            return HttpResponseRedirect(settings.LOGIN_URL)   
+            next = settings.RESOURCE_REDIRECT_URL
     else:
-        log.debug("No user found")
-        return HttpResponseRedirect(settings.LOGIN_URL)   
+        next = redirect_url
+
+    if request.method == 'POST':
+        form = AuthenticationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(username=username, password=password)
+            log.debug("Auhentication")
+            if user is not None:
+                login(request, user)
+                log.debug("Login")
+                institution = authentication_tools.get_institution(request)
+                authentication_tools.add_session_username(request, username)
+                return HttpResponseRedirect(next)
+            else:
+                message = "Invalid username or password"
+                form = AuthenticationForm()
+    else:
+        form = AuthenticationForm()
+    return render_to_response(template_name,
+            { 'form' : form,
+            'next' : next,
+            'message' : message, },
+            context_instance=RequestContext(request))
 
 
 def shibboleth_login(request):
@@ -186,10 +203,12 @@ def shibboleth_login(request):
 
 
 def user_registration(request, template_name=None, redirect_url=None):
-    if 'next' in request.REQUEST:
-        redirect_url = request.REQUEST['next']
+    if "next" in request.REQUEST:
+        next = request.REQUEST['next']
+    elif not redirect_url:
+        next = settings.RESOURCE_REDIRECT_URL
     else:
-        redirect_url = settings.RESOURCE_REDIRECT_URL
+        next = redirect_url
 
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -202,6 +221,7 @@ def user_registration(request, template_name=None, redirect_url=None):
             { 'form' : form,
             'next' : redirect_url, },
             context_instance=RequestContext(request))
+
 
 @login_required
 def logout_view(request, template_name=None, redirect_url=None, redirect_viewname=None):

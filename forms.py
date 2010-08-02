@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 
 from idpauth.models import IdentityProvider
 
@@ -56,3 +57,8 @@ class UserCreationForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class AuthenticationForm(forms.Form):
+    username = forms.CharField(label=("Username"), max_length=30)
+    password = forms.CharField(label=("Password"), widget=forms.PasswordInput)
