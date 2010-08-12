@@ -1,10 +1,8 @@
 from django.db import models
-from django.db.models import signals
-from django.contrib.auth.models import Group, User
+from django.db.models.signals import pre_save, post_save
+from django.contrib.auth.models import Group, User, UserManager
 
-from opus.lib import log
-log = log.getLogger()
-
+from idpauth import signals
 
 class IdentityProvider(models.Model):
     """Identity provider base class."""
@@ -19,6 +17,7 @@ class IdentityProvider(models.Model):
     def __str__(self):
         return self.name
 
+
 class IdentityProviderLDAP(IdentityProvider):
     url = models.CharField("Server Url",max_length=60)
     bind_base = models.CharField("Bind Base", max_length=128)
@@ -29,24 +28,26 @@ class IdentityProviderLDAP(IdentityProvider):
     class Meta:
         verbose_name = "LDAP Identity Provider"
 
+
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
     ldap_roles = models.TextField("User's LDAP Roles", editable=False, blank=True)
 
+
 class IdentityProviderLocal(IdentityProvider):
-    
     class Meta:
         verbose_name = "Local Identity Provider"
 
-class IdentityProviderOpenID(IdentityProvider):
-        
+
+class IdentityProviderOpenID(IdentityProvider):        
     class Meta:
         verbose_name = "OpenID Identity Provider"
 
-class IdentityProviderShibboleth(IdentityProvider):
 
+class IdentityProviderShibboleth(IdentityProvider):
     class Meta:
         verbose_name = "Shibboleth Identity Provider"
+
 
 ####### OpenID Required Models ##############
 class Nonce(models.Model):
@@ -56,6 +57,7 @@ class Nonce(models.Model):
 
     def __unicode__(self):
         return "Nonce: %s" % self.nonce
+
 
 class Association(models.Model):
     server_url = models.TextField(max_length=2047)
@@ -69,28 +71,7 @@ class Association(models.Model):
         return "Association: %s, %s" % (self.server_url, self.handle)
 
 
-######## Signal Handler Functions ############
-def set_identityprovider_type(sender, instance, **kwargs):
-    idp_type = sender.__name__.split('IdentityProvider')[1].lower()
-    if idp_type == 'openid':
-        instance.type = 'openid'
-    elif idp_type == 'local':
-        instance.type = 'local'
-    elif idp_type == 'ldap':
-        instance.type = 'ldap'
-    else:
-        instance.type = ''
-
-def add_local_identifier(sender, instance, created, **kwargs):
-    if created:
-        user = instance.username.split('++')
-        if len(user) == 1:
-            instance.username = 'local++' + instance.username
-            instance.save()
-            log.debug(instance.username)
-
-######## Signal Declarations  ############
-signals.pre_save.connect(set_identityprovider_type, sender=IdentityProviderOpenID)
-signals.pre_save.connect(set_identityprovider_type, sender=IdentityProviderLocal)
-signals.pre_save.connect(set_identityprovider_type, sender=IdentityProviderLDAP)
-signals.post_save.connect(add_local_identifier, sender=User)
+pre_save.connect(signals.set_identityprovider_type, sender=IdentityProviderOpenID)
+pre_save.connect(signals.set_identityprovider_type, sender=IdentityProviderLocal)
+pre_save.connect(signals.set_identityprovider_type, sender=IdentityProviderLDAP)
+post_save.connect(signals.add_local_identifier, sender=User)

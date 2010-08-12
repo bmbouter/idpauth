@@ -205,6 +205,7 @@ def shibboleth_login(request):
 def user_registration(request, template_name=None, redirect_url=None):
     if "next" in request.REQUEST:
         next = request.REQUEST['next']
+        log.debug("Setting next " + next)
     elif not redirect_url:
         next = settings.RESOURCE_REDIRECT_URL
     else:
@@ -214,12 +215,13 @@ def user_registration(request, template_name=None, redirect_url=None):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(redirect_url)
+            log.debug("Redirecting to: " + next)
+            return HttpResponseRedirect(next)
     else:
         form = UserCreationForm()
     return render_to_response(template_name,
             { 'form' : form,
-            'next' : redirect_url, },
+            'next' : next, },
             context_instance=RequestContext(request))
 
 

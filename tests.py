@@ -7,17 +7,11 @@ Replace these with more appropriate tests for your application.
 
 from django.test import TestCase
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
+from idpauth.models import CustomUser
 
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
+class AuthTest(TestCase):
+    def setUp(self):
+        self.c = CustomUser.objects.create(name="Test", idp="local", username="test")
 
->>> 1 + 1 == 2
-True
-"""}
-
+    def test_custom_user(self):
+        self.assertEquals(self.c.username, "Test")
