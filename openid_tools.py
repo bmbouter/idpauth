@@ -18,9 +18,12 @@ from idpauth.models import Association, Nonce
 from opus.lib import log
 log = log.getLogger()
 
-def begin_openid(session, trust_root, openid_url, resource_redirect_url):
-    redirect_to = trust_root + '/idpauth/openid_login_complete/' + '?next=' + resource_redirect_url
-    
+def begin_openid(session, trust_root, openid_url, resource_redirect_url, redirect_to=None):
+    if not redirect_to:
+        redirect_to = trust_root + '/idpauth/openid_login_complete/' + '?next=' + resource_redirect_url
+    else:
+        redirect_to = trust_root + redirect_to + '?next=' + resource_redirect_url
+    log.debug(redirect_to)
     consumer = Consumer(session, DjangoOpenIDStore())
     try:
         auth_request = consumer.begin(openid_url)

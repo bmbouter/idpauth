@@ -93,7 +93,7 @@ def ldap_login(request):
         context_instance=RequestContext(request))
 
 
-def openid_login(request):
+def openid_login(request, redirect_to=None):
     openid_url = request.POST['openid_url']
     resource_redirect_url = request.POST['next']
     log.debug(resource_redirect_url)
@@ -101,7 +101,11 @@ def openid_login(request):
     session = request.session
 
     trust_root = authentication_tools.get_url_host(request)
-    redirect_url = openid_tools.begin_openid(session, trust_root, openid_url, resource_redirect_url)
+    if not redirect_to:
+        redirect_url = openid_tools.begin_openid(session, trust_root, openid_url, resource_redirect_url)
+    else:
+        log.debug(redirect_to)
+        redirect_url = openid_tools.begin_openid(session, trust_root, openid_url, resource_redirect_url, redirect_to)
 
     if not redirect_url:
         return HttpResponse('The OpenID was invalid')
