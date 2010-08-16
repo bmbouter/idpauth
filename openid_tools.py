@@ -22,7 +22,7 @@ def begin_openid(session, trust_root, openid_url, resource_redirect_url, redirec
     if not redirect_to:
         redirect_to = trust_root + '/idpauth/openid_login_complete/' + '?next=' + resource_redirect_url
     else:
-        redirect_to = trust_root + redirect_to + '?next=' + resource_redirect_url
+        redirect_to = trust_root + '/' + redirect_to + '?next=' + resource_redirect_url
     
     log.debug(redirect_to)
     consumer = Consumer(session, DjangoOpenIDStore())
