@@ -134,15 +134,11 @@ def openid_login_complete(request):
         username = username
         user = authenticate(username=username)
         if user is not None:
-            if user.is_active:
-                log.debug("Logging user in")
-                login(request, user)
-                authentication_tools.add_session_username(request, username.split('@')[0])
-                log.debug("Redirecting to " + resource_redirect_url)
-                return HttpResponseRedirect(resource_redirect_url)
-            else:
-                log.debug("User is no longer active")
-                return HttpResponseRedirect(settings.LOGIN_URL)   
+            log.debug("Logging user in")
+            login(request, user)
+            authentication_tools.add_session_username(request, username.split('@')[0])
+            log.debug("Redirecting to " + resource_redirect_url)
+            return HttpResponseRedirect(resource_redirect_url)
         else:
             log.debug("No user found")
             return HttpResponseRedirect(settings.LOGIN_URL)   
