@@ -18,10 +18,6 @@ def set_identityprovider_type(sender, instance, **kwargs):
 def add_local_identifier(sender, instance, created, **kwargs):
     if created:
         user = instance.username.split('++')
-        if len(user) == 1:
-            instance.username = 'local++' + instance.username
-            instance.save()
-            log.debug(instance.username)
         if settings.SEND_EMAIL_ON_USER_CREATION:
             log.debug("sending email")
             send_mail(settings.EMAIL_SUBJECT, settings.EMAIL_MESSAGE + "  " + user[0], settings.FROM_EMAIL_ADDRESS,
