@@ -131,7 +131,7 @@ def openid_login_complete(request):
     status, username = openid_tools.complete_openid(session, query_dict, url)
 
     if status == "SUCCESS":
-        username = institution + '++' + username
+        username = username
         user = authenticate(username=username)
         if user is not None:
             if user.is_active:
