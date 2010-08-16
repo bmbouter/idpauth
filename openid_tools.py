@@ -64,7 +64,7 @@ def get_return_url(host, nonce, return_url=None):
     if not return_url:
         url = (host + '/idpauth/openid_login_complete/').encode('utf8')     
     else:
-        url = (host + return_url).encode('utf8')
+        url = (host + '/' + return_url).encode('utf8')
     return url
 
 def from_openid_response(openid_response):
