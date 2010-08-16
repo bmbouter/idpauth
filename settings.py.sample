@@ -1,12 +1,21 @@
-######## IDPAUTH Settings ######
+######## OpenID Settings ######
 OPENID_AX = [{"type_uri" : "http://axschema.org/contact/email", "count" : 1, "required" : True, "alias" : "email"}]
-RESOURCE_REDIRECT_URL = '/vdi/'
-BASE_URL = 'opus-dev.cnl.ncsu.edu'
-LOGIN_URL = '/idpauth/login/'
 AUTH_PROFILE_MODULE = "idpauth.UserProfile"
+
+RESOURCE_REDIRECT_URL = 
+BASE_URL = 
+LOGIN_URL = 
+
+#Optional setting - if left blank idpauth urls will be used
+OPENID_COMPLETE_URL = ""
+
+#These settings allow for an admin to have an email sent to them everytime a user is created
+#Required
 SEND_EMAIL_ON_USER_CREATION = True
-EMAIL_HOST = "smtp.ncsu.edu"
-EMAIL_PORT = 
+
+#Optional
+EMAIL_HOST = 
+EMAIL_PORT =
 EMAIL_HOST_USER = 
 EMAIL_HOST_PASSWORD =
 EMAIL_USE_TLS = 
@@ -14,11 +23,10 @@ FROM_EMAIL_ADDRESS = "appassess@oscar.ncsu.edu"
 EMAIL_SUBJECT = "App Assessment User"
 EMAIL_MESSAGE = "Click this link to approve new user."
 
+#Required for IdpAuth 
 from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
 TEMPLATE_CONTEXT_PROCESSORS += (
     'idpauth.context_preprocessor',
-    'oc_home.context_preprocessor',
-    'django.core.context_processors.request',
 )
 
 AUTHENTICATION_BACKENDS = (

@@ -120,7 +120,10 @@ def openid_login_complete(request):
     
     host = authentication_tools.get_url_host(request)
     nonce = request.GET['janrain_nonce']
-    url = openid_tools.get_return_url(host, nonce)
+    if not "" == settings.OPENID_COMPLETE_URL:
+        url = openid_tools.get_return_url(host, nonce, settings.OPENID_COMPLETE_URL)
+    else:
+        url = openid_tools.get_return_url(host, nonce)
     
     query_dict = dict([
         (k.encode('utf8'), v.encode('utf8')) for k, v in request.GET.items()])
@@ -150,6 +153,12 @@ def openid_login_complete(request):
         {'message' : message,
         'next' : resource_redirect_url,},
         context_instance=RequestContext(request))
+    elif status == "FAILURE":
+        return render_to_response('idpauth/openid.html',
+        {'message' : username,
+        'next' : resource_redirect_url,},
+        context_instance=RequestContext(request))
+
     else:
         message = "An error was encountered"
         return render_to_response('idpauth/openid.html',

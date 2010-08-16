@@ -23,8 +23,10 @@ def begin_openid(session, trust_root, openid_url, resource_redirect_url, redirec
         redirect_to = trust_root + '/idpauth/openid_login_complete/' + '?next=' + resource_redirect_url
     else:
         redirect_to = trust_root + redirect_to + '?next=' + resource_redirect_url
+    
     log.debug(redirect_to)
     consumer = Consumer(session, DjangoOpenIDStore())
+    
     try:
         auth_request = consumer.begin(openid_url)
     except DiscoveryFailure:
@@ -53,11 +55,16 @@ def complete_openid(session, query_dict, url):
         return "SUCCESS", openid.ax.getExtensionArgs()['value.ext0.1']
     elif openid_response.status == CANCEL:
         return "CANCEL", None
+    elif openid_response.status == FAILURE:
+        return "FAILURE", openid_response.message
     else:
         return None, None
 
-def get_return_url(host, nonce):
-    url = (host + '/idpauth/openid_login_complete/').encode('utf8')     
+def get_return_url(host, nonce, return_url=None):
+    if not return_url:
+        url = (host + '/idpauth/openid_login_complete/').encode('utf8')     
+    else:
+        url = (host + return_url).encode('utf8')
     return url
 
 def from_openid_response(openid_response):
