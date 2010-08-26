@@ -1,8 +1,8 @@
-from django.conf import settings
-
 import time 
 import base64
 import urllib
+
+from django.conf import settings
 
 from openid.extensions import ax as oidax
 from openid.store import nonce as oid_nonce
@@ -17,6 +17,9 @@ from idpauth.models import Association, Nonce
 
 from opus.lib import log
 log = log.getLogger()
+
+OPENID_AX = [{"type_uri" : "http://axschema.org/contact/email", "count" : 1, "required" : True, "alias" : "email"}]
+
 
 def begin_openid(session, trust_root, openid_url, resource_redirect_url, redirect_to=None):
     if not redirect_to:
@@ -37,7 +40,7 @@ def begin_openid(session, trust_root, openid_url, resource_redirect_url, redirec
     return redirect_url
 
 def set_attributes(auth_request):
-    requested_attributes = getattr(settings, 'OPENID_AX', False)
+    requested_attributes = OPENID_AX
     if requested_attributes:
         log.debug("AX true")
         ax_request = oidax.FetchRequest()
@@ -78,7 +81,7 @@ def from_openid_response(openid_response):
     if getattr(settings, 'OPENID_SREG', False):
         openid.sreg = oidsreg.SRegResponse.fromSuccessResponse(openid_response)
 
-    if getattr(settings, 'OPENID_AX', False):
+    if OPENID_AX:
         openid.ax = oidax.FetchResponse.fromSuccessResponse(openid_response)
 
     return openid

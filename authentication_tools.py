@@ -29,8 +29,7 @@ def is_valid_next_url(request, next):
     absUri = request.build_absolute_uri(next)
     return absUri != next
 
-def get_provider(url):
-    
+def get_provider(url):   
     if str(url).find('google') != -1:
         provider = 'google'
     elif str(url).find('yahoo') != -1:
