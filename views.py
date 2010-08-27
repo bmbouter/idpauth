@@ -180,7 +180,6 @@ def local_login(request, template_name=None, redirect_url=None, redirect_viewnam
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-            username = "local++" + username
             user = authenticate(username=username, password=password)
             log.debug("Auhentication")
             if user is not None:

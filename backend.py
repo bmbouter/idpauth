@@ -8,7 +8,6 @@ log = log.getLogger()
 
 
 class IdpAuthBackend:
-
     def authenticate(self, username=None, password=None):
         if not username:
             return None
